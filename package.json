@@ -1,0 +1,39 @@
+{
+  "name": "gcp-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/server.js",
+  "imports": {
+    "#src/*": "./src/*"
+  },
+  "scripts": {
+    "dev": "node --watch --env-file=./env/.env.development src/server.js",
+    "start": "node src/server.js",
+    "prisma:generate": "dotenv -e ./env/.env.development -- prisma generate",
+    "prisma:migrate": "dotenv -e ./env/.env.development -- prisma migrate dev",
+    "prisma:studio": "dotenv -e ./env/.env.development -- prisma studio",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.6.0",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.6.0",
+  "type": "module",
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "express": "^5.2.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^11.0.0",
+    "prisma": "^7.10.0"
+  }
+}

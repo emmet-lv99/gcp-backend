@@ -1,0 +1,45 @@
+# === 1. Dependencies ===
+node_modules/
+.pnpm-store/
+.pnpm-debug.log*
+
+# === 2. Environment Variables & Secrets ===
+.env
+.env.*
+!.env.example
+env/
+
+# === 3. Prisma Generated Client ===
+src/generated/
+/src/generated
+
+# === 4. Logs & Runtime Data ===
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# === 5. Build & Output Directories ===
+dist/
+build/
+coverage/
+.nyc_output/
+
+# === 6. OS & Editor Specific Files ===
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace

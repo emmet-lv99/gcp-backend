@@ -1,0 +1,45 @@
+model Study {
+  id            Int             @id @default(autoincrement())
+  nickname      String          @db.VarChar(255)
+  title         String          @db.VarChar(255)
+  description   String?
+  background    String          @db.VarChar(255)
+  studyPassword String          @map("study_password") @db.VarChar(255)
+  point         Int             @default(0)
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  deletedAt     DateTime?       @map("deleted_at")
+  habits        Habit[]
+  reactions     StudyReaction[]
+  studyRecords  StudyRecord[]
+
+  @@map("study")
+}
+
+model StudyReaction {
+  id        Int       @id @default(autoincrement())
+  studyId   Int       @map("study_id")
+  emoji     String    @db.VarChar(50)
+  guestUuid String    @map("guest_uuid") @db.VarChar(36)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  study     Study     @relation(fields: [studyId], references: [id], onDelete: Cascade)
+
+  @@index([studyId])
+  @@map("study_reactions")
+}
+
+model StudyRecord {
+  id              Int       @id @default(autoincrement())
+  studyId         Int       @map("study_id")
+  durationSeconds Int       @map("duration_seconds")
+  earnedPoint     Int       @default(0) @map("earned_point")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+  study           Study     @relation(fields: [studyId], references: [id], onDelete: Cascade)
+
+  @@index([studyId])
+  @@map("study_records")
+}
