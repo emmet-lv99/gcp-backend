@@ -12,7 +12,6 @@
     "prisma:generate": "dotenv -e ./env/.env.development -- prisma generate",
     "prisma:migrate": "dotenv -e ./env/.env.development -- prisma migrate dev",
     "prisma:studio": "dotenv -e ./env/.env.development -- prisma studio",
-    "postinstall": "prisma generate --schema=./prisma",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
