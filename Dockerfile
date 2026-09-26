@@ -1,30 +1,58 @@
 # ==========================================
-# 1. Node.js v24.2 베이스 이미지 사용
+# Stage 1: Builder (의존성 설치 및 Prisma Client 생성)
 # ==========================================
-FROM node:24.2-alpine
+FROM node:24.2-alpine AS builder
 
-# 2. 컨테이너 내부 작업 디렉토리 설정
 WORKDIR /app
 
-# 3. 패키지 명세 파일 복사 (캐싱 최적화)
-COPY package*.json ./
+# pnpm 전역 경로 및 PATH 환경 변수 사전 고정
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
 
-# 4. Prisma 설정 및 스키마 폴더 복사
-COPY prisma.config.js ./
-COPY prisma ./prisma/
+# Corepack 활성화 및 pnpm v12.6.0 지정 활성화
+RUN corepack enable && corepack prepare pnpm@12.6.0 --activate
 
-# 5. npm을 통한 의존성 설치 (빌드 스크립트 및 바이너리 자동 승인)
-RUN npm install
+# 패키지 명세 파일 및 pnpm 워크스페이스, 설정 복사
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml prisma.config.js ./
+COPY prisma ./prisma
 
-# 6. 전체 소스 코드 복사 (src, routes, services 등)
-COPY . .
+# pnpm 전용 의존성 설치 (postinstall 스크립트에 의한 prisma generate 자동 수행 포함)
+RUN pnpm install --frozen-lockfile
 
-# 7. Prisma Client 생성 (src/generated/prisma 빌드)
-RUN npm run prisma:generate
+# 소스 코드 복사
+COPY src ./src
 
-# 8. GCP Cloud Run 기본 포트 환경변수 명시 (기본값 5001 호환)
+# Prisma 커스텀 클라이언트 빌드 명시적 실행 (안전장치)
+RUN pnpm prisma:generate
+
+# ==========================================
+# Stage 2: Runner (실제 프로덕션 실행 이미지)
+# ==========================================
+FROM node:24.2-alpine AS runner
+
+WORKDIR /app
+
+# 보안을 위한 시스템 유저 권한 설정
+RUN mkdir -p /app && chown -R node:node /app
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+RUN corepack enable && corepack prepare pnpm@12.6.0 --activate
+
+# 설정 및 소스 결과물 복사
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml prisma.config.js ./
+COPY prisma ./prisma
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/src/generated ./src/generated
+
+# 프로덕션 의존성만 설치
+RUN pnpm install --prod --frozen-lockfile
+
+# 보안 강화: 논루트(non-root) node 유저로 실행
+USER node
+
 ENV PORT=5001
 EXPOSE 5001
 
-# 9. 서버 실행 (package.json의 "start": "node src/server.js")
-CMD ["npm", "start"]
+CMD ["node", "src/server.js"]
